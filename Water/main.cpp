@@ -5,19 +5,24 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
 
 #include "common/ShaderHelper.h"
 #include "shapes/Cube.h"
 #include "camera/Camera.h"
 
+// Paths
 const char* VERTEX_SHADER_PATH = "shaders/VertexShader.glsl";
 const char* FRAGMENT_SHADER_PATH = "shaders/FragmentShader.glsl";
+const char* DEMO_HEIGHTMAP_PATH = "demo_heightmap.png";
 
 // Timing
 float PROGRAM_START_TIME = glfwGetTime();
 float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
+// Declarated funcs
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 void processInput(GLFWwindow* window);
@@ -67,6 +72,29 @@ int main() {
     glfwSetCursorPosCallback(window, mouseCallback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+    // Loading demo heightmap as a texture
+    int TEX_WIDTH, TEX_HEIGHT, TEX_NCHANNELS;
+    unsigned char* data = stbi_load(DEMO_HEIGHTMAP_PATH,
+        &TEX_WIDTH, &TEX_HEIGHT, &TEX_NCHANNELS,
+        0);
+
+    std::cout << "LOADED DEMO HEIGHTMAP" << std::endl;
+    std::cout << "Height: " << TEX_HEIGHT << std::endl;
+    std::cout << "Width: " << TEX_WIDTH << std::endl;
+    std::cout << "Number of Channels: " << TEX_NCHANNELS << std::endl;
+
+    // Consts
+    const float RES = 20.0f;                     // Number of patches per texture
+    const float HPP = TEX_HEIGHT / RES;     // Height per patch
+    const float WPP = TEX_WIDTH / RES;      // Width per patch
+    const float TEX_HPP = 1.0f / RES;
+    const float TEX_WPP = 1.0f / RES;
+
+    std::cout << "Height Per Pixel: " << HPP << std::endl;
+    std::cout << "Width Per Pixel: " << WPP << std::endl;
+    std::cout << "Tex Height Per Pixel: " << TEX_HPP << std::endl;
+    std::cout << "Tex Width Per Pixel: " << TEX_WPP << std::endl;
+
     // Shader compilation and linking
     ShaderHelper sh;
     GLuint vShader = sh.compileVShader(VERTEX_SHADER_PATH);
@@ -74,6 +102,56 @@ int main() {
     GLuint shaderProgram = sh.linkShaders(2, vShader, fShader);
     glDeleteShader(vShader);
     glDeleteShader(fShader);
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Setting patch parameters
+    glPatchParameteri(GL_PATCH_VERTICES, 4);
+
+    /* Patch Generation
+    
+    We want to divide Height and Width by NUM_PATCHES
+    
+    height_per_patch = Height / NUM_PATCHES
+    width_per_patch = Width / NUM_PATCHES
+
+    i = 0, j = 0
+    i * hpp, j * wpp
+    */
+
+    std::vector<float> vert_data;
+
+    // Patch generation
+    for (size_t i = 0; i < RES; i++) {
+        for (size_t j = 0; j < RES; j++) {
+
+            size_t dirs_i[] = { 0, 0, 1, 1 };
+            size_t dirs_j[] = { 0, 1, 0, 1 };
+
+            for (size_t k = 0; k < 4; k++) {
+
+                size_t newi = i + dirs_i[k];
+                size_t newj = j + dirs_j[k];
+
+                float worldi = newi * HPP;
+                float worldj = newj * WPP;
+                float worldk = 0.0f;
+                float u = newi * TEX_HPP;
+                float v = newj * TEX_WPP;
+
+                vert_data.push_back(worldi);
+                vert_data.push_back(worldj);
+                vert_data.push_back(worldk);
+                vert_data.push_back(u);
+                vert_data.push_back(v);
+
+            }
+
+        }
+    }
+   
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     GLuint VAO, VBO;
 
@@ -105,7 +183,9 @@ int main() {
     // Enable V-sync for v-blanks
     glfwSwapInterval(1);
 
-    std::cout << "Starting to render" << std::endl;
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    std::cout << "STARTING TO RENDER" << std::endl;
 
     // Render loop
     while (!glfwWindowShouldClose(window))
@@ -175,6 +255,7 @@ void processInput(GLFWwindow* window)
         glfwSetWindowShouldClose(window, true);
 }
 
+/* Changes camera perspective based on mouse location */
 void mouseCallback(GLFWwindow* window, double dXPos, double dYPos)
 {
     float xpos = static_cast<float>(dXPos);
