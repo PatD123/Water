@@ -171,7 +171,7 @@ public:
 
 	// Returns a compiled fragment shader
 	GLuint compileFShader(const char* fShaderFilename) {
-		// Compile vertex shader
+		// Compile fragment shader
 		GLuint fShader = this->readShader(fShaderFilename, GL_FRAGMENT_SHADER);
 
 		// Check success of fShader compilation
@@ -189,6 +189,26 @@ public:
 		return fShader;
 	}
 	
+	// Returns a compiled compute shader
+	GLuint compileCShader(const char* cShaderFilename) {
+		// Compile compute shader
+		GLuint cShader = this->readShader(cShaderFilename, GL_COMPUTE_SHADER);
+
+		// Check success of cShader compilation
+		int  success;
+		char infoLog[512];
+		glGetShaderiv(cShader, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			glGetShaderInfoLog(cShader, 512, NULL, infoLog);
+			std::cout << "ERROR::SHADER::COMPUTE::COMPILATION_FAILED\n" << infoLog << std::endl;
+			glDeleteShader(cShader);
+			return 0;
+		}
+
+		return cShader;
+	}
+
 	void setUniformMat4fv(GLuint shaderProgram, const char* uniformName, const GLfloat* uniformValue) {
 		glUseProgram(shaderProgram);
 		GLuint loc = glGetUniformLocation(shaderProgram, uniformName);

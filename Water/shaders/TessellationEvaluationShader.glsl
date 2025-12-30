@@ -33,7 +33,7 @@ void main()
     vec2 texCoord = (t1 - t0) * v + t0;
 
     // Lookup texel at patch coordinate for height and scale + shift as desired
-    Height = texture(heightMap, texCoord).y * 2.0 - 16.0;
+    Height = texture(heightMap, texCoord).x * 2.0 - 16.0;
 
     // ----------------------------------------------------------------------
     // Retrieve control point position coordinates

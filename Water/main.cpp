@@ -17,6 +17,7 @@ const char* VERTEX_SHADER_PATH = "shaders/VertexShader.glsl";
 const char* TESSELLATION_CONTROL_SHADER_PATH = "shaders/TessellationControlShader.glsl";
 const char* TESSELLATION_EVALUATION_SHADER_PATH = "shaders/TessellationEvaluationShader.glsl";
 const char* FRAGMENT_SHADER_PATH = "shaders/FragmentShader.glsl";
+const char* COMPUTE_SHADER_PATH = "shaders/ComputeShader.glsl";
 const char* DEMO_HEIGHTMAP_PATH = "demo_heightmap.png";
 
 // Timing
@@ -46,7 +47,7 @@ int main() {
     // Initializing OpenGL windows.
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Making the window
@@ -74,33 +75,24 @@ int main() {
     glfwSetCursorPosCallback(window, mouseCallback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+    // Loading demo heightmap as a texture
+    unsigned TEX_WIDTH = 1000;
+    unsigned TEX_HEIGHT = 1000;
+    unsigned TEX_NCHANNELS = 1; // RGB - Just R - Just height. Tex keeps track of height.
+
     unsigned int texture;
     glGenTextures(1, &texture);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
-    // set the texture wrapping/filtering options (on the currently bound texture object)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+    glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R16F);
 
-    // Loading demo heightmap as a texture
-    int TEX_WIDTH, TEX_HEIGHT, TEX_NCHANNELS;
-    unsigned char* data = stbi_load(DEMO_HEIGHTMAP_PATH,
-        &TEX_WIDTH, &TEX_HEIGHT, &TEX_NCHANNELS,
-        0);
-
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TEX_WIDTH, TEX_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        std::cout << "LOADED DEMO HEIGHTMAP" << std::endl;
-        std::cout << "Height: " << TEX_HEIGHT << std::endl;
-        std::cout << "Width: " << TEX_WIDTH << std::endl;
-        std::cout << "Number of Channels: " << TEX_NCHANNELS << std::endl;
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
+    std::cout << "TEXTURE SPECS" << std::endl;
+    std::cout << "Height: " << TEX_HEIGHT << std::endl;
+    std::cout << "Width: " << TEX_WIDTH << std::endl;
+    std::cout << "Number of Channels: " << TEX_NCHANNELS << std::endl;
 
     // Consts
     const float RES = 20.0f;                     // Number of patches per texture
@@ -122,11 +114,14 @@ int main() {
     GLuint tCShader = sh.compileTCShader(TESSELLATION_CONTROL_SHADER_PATH);
     GLuint tEShader = sh.compileTEShader(TESSELLATION_EVALUATION_SHADER_PATH);
     GLuint fShader = sh.compileFShader(FRAGMENT_SHADER_PATH);
+    GLuint cShader = sh.compileCShader(COMPUTE_SHADER_PATH);
     GLuint shaderProgram = sh.linkShaders(4, vShader, tCShader, tEShader, fShader);
+    GLuint computeShaderProgram = sh.linkShaders(1, cShader);
     glDeleteShader(vShader);
     glDeleteShader(tCShader);
     glDeleteShader(tEShader);
     glDeleteShader(fShader);
+    glDeleteShader(cShader);
 
     // Setting patch parameters
     glPatchParameteri(GL_PATCH_VERTICES, 4);
@@ -205,8 +200,6 @@ int main() {
     // Enable V-sync for v-blanks
     glfwSwapInterval(1);
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     std::cout << "STARTING TO RENDER" << std::endl;
 
     // Render loop
@@ -244,6 +237,12 @@ int main() {
         sh.setUniformMat4fv(shaderProgram, "world_mat", glm::value_ptr(world_mat));
         sh.setUniformMat4fv(shaderProgram, "view_mat", glm::value_ptr(view_mat));
         sh.setUniformMat4fv(shaderProgram, "proj_mat", glm::value_ptr(Camera::proj_mat));
+
+        glUseProgram(computeShaderProgram);
+        glDispatchCompute(TEX_WIDTH, TEX_HEIGHT, 1);
+
+        // make sure writing to image has finished before read
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
