@@ -14,6 +14,8 @@
 
 // Paths
 const char* VERTEX_SHADER_PATH = "shaders/VertexShader.glsl";
+const char* TESSELLATION_CONTROL_SHADER_PATH = "shaders/TessellationControlShader.glsl";
+const char* TESSELLATION_EVALUATION_SHADER_PATH = "shaders/TessellationEvaluationShader.glsl";
 const char* FRAGMENT_SHADER_PATH = "shaders/FragmentShader.glsl";
 const char* DEMO_HEIGHTMAP_PATH = "demo_heightmap.png";
 
@@ -72,16 +74,36 @@ int main() {
     glfwSetCursorPosCallback(window, mouseCallback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    // set the texture wrapping/filtering options (on the currently bound texture object)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     // Loading demo heightmap as a texture
     int TEX_WIDTH, TEX_HEIGHT, TEX_NCHANNELS;
     unsigned char* data = stbi_load(DEMO_HEIGHTMAP_PATH,
         &TEX_WIDTH, &TEX_HEIGHT, &TEX_NCHANNELS,
         0);
 
-    std::cout << "LOADED DEMO HEIGHTMAP" << std::endl;
-    std::cout << "Height: " << TEX_HEIGHT << std::endl;
-    std::cout << "Width: " << TEX_WIDTH << std::endl;
-    std::cout << "Number of Channels: " << TEX_NCHANNELS << std::endl;
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TEX_WIDTH, TEX_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        std::cout << "LOADED DEMO HEIGHTMAP" << std::endl;
+        std::cout << "Height: " << TEX_HEIGHT << std::endl;
+        std::cout << "Width: " << TEX_WIDTH << std::endl;
+        std::cout << "Number of Channels: " << TEX_NCHANNELS << std::endl;
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
 
     // Consts
     const float RES = 20.0f;                     // Number of patches per texture
@@ -95,15 +117,19 @@ int main() {
     std::cout << "Tex Height Per Pixel: " << TEX_HPP << std::endl;
     std::cout << "Tex Width Per Pixel: " << TEX_WPP << std::endl;
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     // Shader compilation and linking
     ShaderHelper sh;
     GLuint vShader = sh.compileVShader(VERTEX_SHADER_PATH);
+    GLuint tCShader = sh.compileTCShader(TESSELLATION_CONTROL_SHADER_PATH);
+    GLuint tEShader = sh.compileTEShader(TESSELLATION_EVALUATION_SHADER_PATH);
     GLuint fShader = sh.compileFShader(FRAGMENT_SHADER_PATH);
-    GLuint shaderProgram = sh.linkShaders(2, vShader, fShader);
+    GLuint shaderProgram = sh.linkShaders(4, vShader, tCShader, tEShader, fShader);
     glDeleteShader(vShader);
+    glDeleteShader(tCShader);
+    glDeleteShader(tEShader);
     glDeleteShader(fShader);
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Setting patch parameters
     glPatchParameteri(GL_PATCH_VERTICES, 4);
@@ -133,9 +159,9 @@ int main() {
                 size_t newi = i + dirs_i[k];
                 size_t newj = j + dirs_j[k];
 
-                float worldi = newi * HPP;
-                float worldj = newj * WPP;
-                float worldk = 0.0f;
+                float worldi = newi;
+                float worldj = 0.0f;
+                float worldk = newj;
                 float u = newi * TEX_HPP;
                 float v = newj * TEX_WPP;
 
@@ -149,9 +175,6 @@ int main() {
 
         }
     }
-   
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     GLuint VAO, VBO;
 
@@ -159,17 +182,19 @@ int main() {
     glGenVertexArrays(1, &VAO);
 
     int posLocation = 0;
+    int texLocation = 1;
 
     glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glEnableVertexAttribArray(posLocation);
-    glVertexAttribPointer(posLocation, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (void*)0);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Cube::vertices), Cube::vertices, GL_STATIC_DRAW);
-
+    glEnableVertexAttribArray(texLocation);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vert_data.size(), vert_data.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(posLocation, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void*)0); // aPos
+    glVertexAttribPointer(texLocation, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void*)(3 * sizeof(GL_FLOAT))); // aTex
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Make OpenGL do depth testing
     glEnable(GL_DEPTH_TEST);
@@ -225,7 +250,7 @@ int main() {
 
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArrays(GL_PATCHES, 0, 4 * RES * RES);
 
         /*
         Typically applications have two buffers. One is the front one that holds what is currently

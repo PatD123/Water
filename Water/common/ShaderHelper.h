@@ -129,6 +129,46 @@ public:
 		return vShader;
 	}
 
+	// Returns a compiled tessellation control shader
+	GLuint compileTCShader(const char* tCShaderFilename) {
+		// Compile tessellation control shader
+		GLuint tCShader = this->readShader(tCShaderFilename, GL_TESS_CONTROL_SHADER);
+
+		// Check success of TCShader compilation
+		int  success;
+		char infoLog[512];
+		glGetShaderiv(tCShader, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			glGetShaderInfoLog(tCShader, 512, NULL, infoLog);
+			std::cout << "ERROR::SHADER::TCS::COMPILATION_FAILED\n" << infoLog << std::endl;
+			glDeleteShader(tCShader);
+			return 0;
+		}
+
+		return tCShader;
+	}
+
+	// Returns a compiled tessellation evaluation shader
+	GLuint compileTEShader(const char* tEShaderFilename) {
+		// Compile tessellation evaluation shader
+		GLuint tEShader = this->readShader(tEShaderFilename, GL_TESS_EVALUATION_SHADER);
+
+		// Check success of TEShader compilation
+		int  success;
+		char infoLog[512];
+		glGetShaderiv(tEShader, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			glGetShaderInfoLog(tEShader, 512, NULL, infoLog);
+			std::cout << "ERROR::SHADER::TES::COMPILATION_FAILED\n" << infoLog << std::endl;
+			glDeleteShader(tEShader);
+			return 0;
+		}
+
+		return tEShader;
+	}
+
 	// Returns a compiled fragment shader
 	GLuint compileFShader(const char* fShaderFilename) {
 		// Compile vertex shader
