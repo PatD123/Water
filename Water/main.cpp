@@ -80,14 +80,24 @@ int main() {
     unsigned TEX_HEIGHT = 1000;
     unsigned TEX_NCHANNELS = 1; // RGB - Just R - Just height. Tex keeps track of height.
 
-    unsigned int texture;
-    glGenTextures(1, &texture);
+    // Creating r/w heightmap texture for Compute Shader.
+    unsigned int heightTexture;
+    glGenTextures(1, &heightTexture);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glBindTexture(GL_TEXTURE_2D, heightTexture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
-    glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R16F);
+    glBindImageTexture(0, heightTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R16F);
+    // Creating r/w normal texture for Compute Shader.
+    unsigned int normalTexture;
+    glGenTextures(1, &normalTexture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, normalTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glBindImageTexture(1, normalTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
 
     std::cout << "TEXTURE SPECS" << std::endl;
     std::cout << "Height: " << TEX_HEIGHT << std::endl;
@@ -95,7 +105,7 @@ int main() {
     std::cout << "Number of Channels: " << TEX_NCHANNELS << std::endl;
 
     // Consts
-    const float RES = 20.0f;                     // Number of patches per texture
+    const float RES = 10.0f;                     // Number of patches per texture
     const float HPP = TEX_HEIGHT / RES;     // Height per patch
     const float WPP = TEX_WIDTH / RES;      // Width per patch
     const float TEX_HPP = 1.0f / RES;
@@ -237,6 +247,7 @@ int main() {
         sh.setUniformMat4fv(shaderProgram, "world_mat", glm::value_ptr(world_mat));
         sh.setUniformMat4fv(shaderProgram, "view_mat", glm::value_ptr(view_mat));
         sh.setUniformMat4fv(shaderProgram, "proj_mat", glm::value_ptr(Camera::proj_mat));
+        sh.setUniform1f(computeShaderProgram, "t", currentframe);
 
         glUseProgram(computeShaderProgram);
         glDispatchCompute(TEX_WIDTH, TEX_HEIGHT, 1);
