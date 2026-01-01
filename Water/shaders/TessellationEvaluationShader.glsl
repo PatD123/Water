@@ -4,6 +4,7 @@
 layout (quads, fractional_odd_spacing, ccw) in;
 
 uniform sampler2D heightMap;  // the texture corresponding to our height map
+uniform sampler2D normalMap;  // the texture corresponding to our normal map
 uniform mat4 world_mat;
 uniform mat4 view_mat;
 uniform mat4 proj_mat;
@@ -12,7 +13,9 @@ uniform mat4 proj_mat;
 in vec2 TextureCoord[];
 
 // send to Fragment Shader for coloring
+out vec2 Normal;
 out float Height;
+out vec3 FragPos;
 
 void main()
 {
@@ -33,7 +36,8 @@ void main()
     vec2 texCoord = (t1 - t0) * v + t0;
 
     // Lookup texel at patch coordinate for height and scale + shift as desired
-    Height = texture(heightMap, texCoord).x * 0.2 - 16.0;
+    Height = texture(heightMap, texCoord).x * 0.8 - 16.0;
+    Normal = texture(normalMap, texCoord).xy;
 
     // ----------------------------------------------------------------------
     // Retrieve control point position coordinates
@@ -58,4 +62,6 @@ void main()
     // ----------------------------------------------------------------------
     // output patch point position in clip space
     gl_Position = proj_mat * view_mat * world_mat * p;
+    FragPos = (world_mat * p).xyz;
+
 }

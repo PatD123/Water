@@ -42,6 +42,10 @@ bool firstMouse = true;
 float lastX = 800.0f / 2.0;
 float lastY = 600.0 / 2.0;
 
+// Consts
+const glm::vec3 LIGHT_POS = glm::vec3(100.0f, 100.0f, 100.0f);
+const glm::vec3 LIGHT_COLOR = glm::vec3(1.0f, 1.0f, 1.0f);
+
 int main() {
 
     // Initializing OpenGL windows.
@@ -247,7 +251,12 @@ int main() {
         sh.setUniformMat4fv(shaderProgram, "world_mat", glm::value_ptr(world_mat));
         sh.setUniformMat4fv(shaderProgram, "view_mat", glm::value_ptr(view_mat));
         sh.setUniformMat4fv(shaderProgram, "proj_mat", glm::value_ptr(Camera::proj_mat));
+        sh.setUniform3fv(shaderProgram, "LightPos", glm::value_ptr(LIGHT_POS));
+        sh.setUniform3fv(shaderProgram, "LightColor", glm::value_ptr(LIGHT_COLOR));
+        sh.setUniform3fv(shaderProgram, "CamPos", glm::value_ptr(cam.m_pos));
         sh.setUniform1f(computeShaderProgram, "t", currentframe);
+        sh.setUniform1i(shaderProgram, "heightMap", 0);
+        sh.setUniform1i(shaderProgram, "normalMap", 1);
 
         glUseProgram(computeShaderProgram);
         glDispatchCompute(TEX_WIDTH, TEX_HEIGHT, 1);
