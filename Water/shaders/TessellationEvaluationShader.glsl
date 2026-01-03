@@ -13,7 +13,7 @@ uniform mat4 proj_mat;
 in vec2 TextureCoord[];
 
 // send to Fragment Shader for coloring
-out vec2 Normal;
+out vec3 Normal;
 out float Height;
 out vec3 FragPos;
 
@@ -36,8 +36,8 @@ void main()
     vec2 texCoord = (t1 - t0) * v + t0;
 
     // Lookup texel at patch coordinate for height and scale + shift as desired
-    Height = texture(heightMap, texCoord).x * 0.8 - 16.0;
-    Normal = texture(normalMap, texCoord).xy;
+    Height = texture(heightMap, texCoord).x;
+    Normal = texture(normalMap, texCoord).xyz;
 
     // ----------------------------------------------------------------------
     // Retrieve control point position coordinates
@@ -57,7 +57,7 @@ void main()
     vec4 p = (p1 - p0) * v + p0;
 
     // Displace point along normal
-    p -= normal * Height;
+    p += normal * Height;
 
     // ----------------------------------------------------------------------
     // output patch point position in clip space

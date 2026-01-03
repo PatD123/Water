@@ -13,21 +13,24 @@ float noise(float p){ float fl = floor(p); float fc = fract(p); return mix(rand(
 void main() {
 
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    vec2 normTexelCoord = vec2(1.0, 1.0);
+    normTexelCoord.x = float(texelCoord.x)/(gl_NumWorkGroups.x);
+    normTexelCoord.y = float(texelCoord.y)/(gl_NumWorkGroups.y);
 	
     vec4 height = vec4(0.0, 0.0, 0.0, 0.0);
-    vec4 normal = vec4(0.0, 0.0, 0.0, 0.0);
+    vec4 normal = vec4(0.0, 1.0, 0.0, 0.0);
 
     float Amps[] = {1.0, 1.0, 1.0, 1.0};
-    float Speeds[] = {4.0, 2.5, 3.2, 1.7};
-    float Wavelens[] = {2.1, 5.1, 0.8, 3.8};
+    float Speeds[] = {1.9, 2.5, 0.8, 1.7};
+    float Wavelens[] = {1.0, 5.1, 0.8, 3.8};
     vec2  Dirs[] = {
-        vec2(1.0, 1.0),
+        vec2(1.0, 0.0),
         vec2(2.1, 1.5),
         vec2(1.4, 1.2),
         vec2(1.8, 3.2)
     };
 
-    for(uint i = 0; i<Amps.length(); i++) {
+    for(uint i = 0; i<4; i++) {
 
         // Constants for this wave
         float Amp = Amps[i];
@@ -35,23 +38,23 @@ void main() {
         float Wavelen = Wavelens[i];
         float Omega = 2 / Wavelen;
         float Phase = Speed * Omega;
-        vec2  D = Dirs[i];
+        vec2  D = normalize(Dirs[i]);
 
-        float inp = dot(D, texelCoord * 0.008) * Omega + t * Phase;
+        float inp = dot(D, texelCoord * 0.003) * Omega + t * Phase;
 
         // Developing heightmap for TES.
         height.x += Amp * sin(inp);
 
         // Developing normal map for FS.
-        normal.x += Amp * Omega * D.x * cos(dot(D, texelCoord * 0.008) * Omega + t * Phase);
-        normal.y += Amp * Omega * D.y * cos(dot(D, texelCoord * 0.008) * Omega + t * Phase);
+        normal.x += Amp * Omega * D.x * cos(inp);
+        normal.z += Amp * Omega * D.y * cos(inp);
     }
 
-    // Normalizing height after adding many sines.
-    height.x /= 4.0;
-
     // Negate normal coordinates from derivating wave equations.
-    normal *= -1.0;
+    normal.x = -normal.x;
+    normal.y = 1.0;
+    normal.z = -normal.z;
+    normal = normalize(normal);
 	
     imageStore(heightOutput, texelCoord, height);
     imageStore(normOuput, texelCoord, normal);
