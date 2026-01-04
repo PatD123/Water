@@ -11,7 +11,7 @@ float rand(float n){return fract(sin(n) * 43758.5453123);}
 float noise(float p){ float fl = floor(p); float fc = fract(p); return mix(rand(fl), rand(fl + 1.0), fc);}
 
 // Consts
-const int WAVE_COUNT = 32;
+const int WAVE_COUNT = 16;
 
 void main() {
 
@@ -21,7 +21,7 @@ void main() {
     normTexelCoord.y = float(texelCoord.y)/(gl_NumWorkGroups.y);
 	
     vec4 height = vec4(0.0, 0.0, 0.0, 0.0);
-    vec4 normal = vec4(0.0, 1.0, 0.0, 0.0);
+    vec4 normal = vec4(0.0, 0.0, 0.0, 0.0);
 
     float Amps[WAVE_COUNT];
     float Speeds[WAVE_COUNT];
@@ -37,7 +37,7 @@ void main() {
         float r3 = rand(float(i) * 91.133);
         float r4 = rand(float(i) * 7.63981);
 
-        Amps[i]     = mix(0.05, 0.3, r0);
+        Amps[i]     = mix(0.05, 0.1, r0);
         Speeds[i]   = mix(0.05, 2.5, r1);
         Wavelens[i] = mix(0.5, 2.0, r2);
         Qs[i]       = mix(0.0, 1.0, r4);
@@ -57,21 +57,22 @@ void main() {
         float Phase = Speed * Omega;
         vec2  D = normalize(Dirs[i]);
 
-        float inp = dot(D, texelCoord * 0.008) * Omega + t * Phase;
+        float inp = dot(D, texelCoord * 0.05) * Omega + t * Phase;
 
         // Developing heightmap for TES.
-        height.x = Q * Amp * D.x * cos(inp);
-        height.y = Amp * sin(inp);
+        height.x += Q * Amp * D.x * cos(inp);
+        height.y += Amp * sin(inp);
         height.z += Q * Amp * D.y * cos(inp);
 
         // Developing normal map for FS.
         normal.x += Amp * Omega * D.x * cos(inp);
+        normal.y += Amp * Omega * Q   * sin(inp);
         normal.z += Amp * Omega * D.y * cos(inp);
     }
 
     // Negate normal coordinates from derivating wave equations.
     normal.x = -normal.x;
-    normal.y = 1.0;
+    normal.y = 1 - normal.y;
     normal.z = -normal.z;
     normal = normalize(normal);
 	

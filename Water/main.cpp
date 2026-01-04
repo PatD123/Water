@@ -43,7 +43,7 @@ float lastX = 800.0f / 2.0;
 float lastY = 600.0 / 2.0;
 
 // Consts
-const glm::vec3 LIGHT_POS = glm::vec3(0.0f, 100.0f, 10.0f);
+const glm::vec3 LIGHT_POS = glm::vec3(20.0f, 100.0f, 20.0f);
 const glm::vec3 LIGHT_COLOR = glm::vec3(1.0f, 1.0f, 1.0f);
 
 int main() {
@@ -93,8 +93,8 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
-    glBindImageTexture(0, heightTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R16F);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glBindImageTexture(0, heightTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
     // Creating r/w normal texture for Compute Shader.
     unsigned int normalTexture;
     glGenTextures(1, &normalTexture);

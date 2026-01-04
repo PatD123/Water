@@ -2,7 +2,7 @@
 
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-layout(r16f, binding = 0) uniform image2D heightOutput;
+layout(rgba16f, binding = 0) uniform image2D heightOutput;
 layout(rgba16f, binding = 1) uniform image2D normOuput;
 
 uniform float t;
@@ -56,7 +56,7 @@ void main() {
         float inp = dot(D, texelCoord * 0.008) * Omega + t * Phase;
 
         // Developing heightmap for TES.
-        height.x += Amp * sin(inp);
+        height.y += Amp * sin(inp);
 
         // Developing normal map for FS.
         normal.x += Amp * Omega * D.x * cos(inp);
