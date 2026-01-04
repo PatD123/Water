@@ -17,7 +17,7 @@ const char* VERTEX_SHADER_PATH = "shaders/VertexShader.glsl";
 const char* TESSELLATION_CONTROL_SHADER_PATH = "shaders/TessellationControlShader.glsl";
 const char* TESSELLATION_EVALUATION_SHADER_PATH = "shaders/TessellationEvaluationShader.glsl";
 const char* FRAGMENT_SHADER_PATH = "shaders/FragmentShader.glsl";
-const char* COMPUTE_SHADER_PATH = "shaders/ComputeShader.glsl";
+const char* COMPUTE_SHADER_PATH = "shaders/GerstnerComputeShader.glsl";
 const char* DEMO_HEIGHTMAP_PATH = "demo_heightmap.png";
 
 // Timing
@@ -93,8 +93,8 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
-    glBindImageTexture(0, heightTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R16F);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glBindImageTexture(0, heightTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
     // Creating r/w normal texture for Compute Shader.
     unsigned int normalTexture;
     glGenTextures(1, &normalTexture);
@@ -113,7 +113,7 @@ int main() {
     std::cout << "Number of Channels: " << TEX_NCHANNELS << std::endl;
 
     // Consts
-    const float RES = 40.0f;                     // Number of patches per texture
+    const float RES = 20.0f;                     // Number of patches per texture
     const float HPP = TEX_HEIGHT / RES;     // Height per patch
     const float WPP = TEX_WIDTH / RES;      // Width per patch
     const float TEX_HPP = 1.0f / RES;

@@ -21,7 +21,7 @@ void main() {
     normTexelCoord.y = float(texelCoord.y)/(gl_NumWorkGroups.y);
 	
     vec4 height = vec4(0.0, 0.0, 0.0, 0.0);
-    vec4 normal = vec4(0.0, 1.0, 0.0, 0.0);
+    vec4 normal = vec4(0.0, 0.0, 0.0, 0.0);
 
     float Amps[WAVE_COUNT];
     float Speeds[WAVE_COUNT];
@@ -37,7 +37,7 @@ void main() {
         float r3 = rand(float(i) * 91.133);
         float r4 = rand(float(i) * 7.63981);
 
-        Amps[i]     = mix(0.05, 0.3, r0);
+        Amps[i]     = mix(0.05, 0.6, r0);
         Speeds[i]   = mix(0.05, 2.5, r1);
         Wavelens[i] = mix(0.5, 2.0, r2);
         Qs[i]       = mix(0.0, 1.0, r4);
@@ -66,12 +66,13 @@ void main() {
 
         // Developing normal map for FS.
         normal.x += Amp * Omega * D.x * cos(inp);
+        normal.y += Amp * Omega * Q   * sin(inp);
         normal.z += Amp * Omega * D.y * cos(inp);
     }
 
     // Negate normal coordinates from derivating wave equations.
     normal.x = -normal.x;
-    normal.y = 1.0;
+    normal.y = 1 - normal.y;
     normal.z = -normal.z;
     normal = normalize(normal);
 	

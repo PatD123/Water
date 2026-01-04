@@ -56,7 +56,7 @@ void main()
     vec4 p = (p1 - p0) * v + p0;
 
     // Displace point along normal
-    p.y += offset.x;
+    p += offset;
 
     // ----------------------------------------------------------------------
     // output patch point position in clip space
