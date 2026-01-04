@@ -14,7 +14,6 @@ in vec2 TextureCoord[];
 
 // send to Fragment Shader for coloring
 out vec3 Normal;
-out float Height;
 out vec3 FragPos;
 
 void main()
@@ -36,7 +35,7 @@ void main()
     vec2 texCoord = (t1 - t0) * v + t0;
 
     // Lookup texel at patch coordinate for height and scale + shift as desired
-    Height = texture(heightMap, texCoord).x;
+    vec4 offset = texture(heightMap, texCoord);
     Normal = texture(normalMap, texCoord).xyz;
 
     // ----------------------------------------------------------------------
@@ -57,7 +56,7 @@ void main()
     vec4 p = (p1 - p0) * v + p0;
 
     // Displace point along normal
-    p += normal * Height;
+    p.y += offset.x;
 
     // ----------------------------------------------------------------------
     // output patch point position in clip space

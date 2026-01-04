@@ -12,12 +12,12 @@ void main() {
 
 	if (gl_InvocationID == 0)
     {
-        gl_TessLevelOuter[0] = 2;
-        gl_TessLevelOuter[1] = 2;
-        gl_TessLevelOuter[2] = 2;
-        gl_TessLevelOuter[3] = 2;
+        gl_TessLevelOuter[0] = 4;
+        gl_TessLevelOuter[1] = 4;
+        gl_TessLevelOuter[2] = 4;
+        gl_TessLevelOuter[3] = 4;
 
-        gl_TessLevelInner[0] = 2;
-        gl_TessLevelInner[1] = 2;
+        gl_TessLevelInner[0] = 4;
+        gl_TessLevelInner[1] = 4;
     }
 }

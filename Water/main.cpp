@@ -113,7 +113,7 @@ int main() {
     std::cout << "Number of Channels: " << TEX_NCHANNELS << std::endl;
 
     // Consts
-    const float RES = 20.0f;                     // Number of patches per texture
+    const float RES = 40.0f;                     // Number of patches per texture
     const float HPP = TEX_HEIGHT / RES;     // Height per patch
     const float WPP = TEX_WIDTH / RES;      // Width per patch
     const float TEX_HPP = 1.0f / RES;

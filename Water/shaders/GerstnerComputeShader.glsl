@@ -2,7 +2,7 @@
 
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-layout(r16f, binding = 0) uniform image2D heightOutput;
+layout(rgba16f, binding = 0) uniform image2D heightOutput;
 layout(rgba16f, binding = 1) uniform image2D normOuput;
 
 uniform float t;
@@ -27,6 +27,7 @@ void main() {
     float Speeds[WAVE_COUNT];
     float Wavelens[WAVE_COUNT];
     vec2  Dirs[WAVE_COUNT];
+    float Qs[WAVE_COUNT];
 
     for (int i = 0; i < WAVE_COUNT; i++)
     {
@@ -34,10 +35,12 @@ void main() {
         float r1 = rand(float(i) * 78.233);
         float r2 = rand(float(i) * 39.425);
         float r3 = rand(float(i) * 91.133);
+        float r4 = rand(float(i) * 7.63981);
 
         Amps[i]     = mix(0.05, 0.3, r0);
         Speeds[i]   = mix(0.05, 2.5, r1);
         Wavelens[i] = mix(0.5, 2.0, r2);
+        Qs[i]       = mix(0.0, 1.0, r4);
 
         float angle = r3 * 6.28318530718;
         Dirs[i]     = vec2(abs(cos(angle)), abs(sin(angle))); // normalized
@@ -49,6 +52,7 @@ void main() {
         float Amp = Amps[i];
         float Speed = Speeds[i];
         float Wavelen = Wavelens[i];
+        float Q = Qs[i];
         float Omega = 2 / Wavelen;
         float Phase = Speed * Omega;
         vec2  D = normalize(Dirs[i]);
@@ -56,7 +60,9 @@ void main() {
         float inp = dot(D, texelCoord * 0.008) * Omega + t * Phase;
 
         // Developing heightmap for TES.
-        height.x += Amp * sin(inp);
+        height.x = Q * Amp * D.x * cos(inp);
+        height.y = Amp * sin(inp);
+        height.z += Q * Amp * D.y * cos(inp);
 
         // Developing normal map for FS.
         normal.x += Amp * Omega * D.x * cos(inp);

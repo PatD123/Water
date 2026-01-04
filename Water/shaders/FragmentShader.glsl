@@ -1,6 +1,5 @@
 #version 410 core
 
-in float Height;
 in vec3 Normal;
 in vec3 FragPos;
 
@@ -29,7 +28,7 @@ void main()
 
     // Specular
 
-    float specularStrength = 0.3;
+    float specularStrength = 0.05;
     vec3 viewDir = normalize(CamPos - FragPos); // From frag to cam
     vec3 reflectDir = reflect(-lightDir, norm);  // Across norm, pointing away from frag.
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 16);
@@ -39,9 +38,4 @@ void main()
     vec3 result = color * lighting + specular; // tint diffuse only
     FragColor = vec4(result, 1.0);
     // FragColor = vec4(Normal, 1.0);
-
-
-
-	// float h = (Height + 16)/0.2f;
-	// FragColor = vec4(h, h, h, 1.0);
 }
