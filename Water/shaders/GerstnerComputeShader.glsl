@@ -11,7 +11,7 @@ float rand(float n){return fract(sin(n) * 43758.5453123);}
 float noise(float p){ float fl = floor(p); float fc = fract(p); return mix(rand(fl), rand(fl + 1.0), fc);}
 
 // Consts
-const int WAVE_COUNT = 32;
+const int WAVE_COUNT = 16;
 
 void main() {
 
@@ -37,7 +37,7 @@ void main() {
         float r3 = rand(float(i) * 91.133);
         float r4 = rand(float(i) * 7.63981);
 
-        Amps[i]     = mix(0.05, 0.6, r0);
+        Amps[i]     = mix(0.05, 0.1, r0);
         Speeds[i]   = mix(0.05, 2.5, r1);
         Wavelens[i] = mix(0.5, 2.0, r2);
         Qs[i]       = mix(0.0, 1.0, r4);
@@ -57,11 +57,11 @@ void main() {
         float Phase = Speed * Omega;
         vec2  D = normalize(Dirs[i]);
 
-        float inp = dot(D, texelCoord * 0.008) * Omega + t * Phase;
+        float inp = dot(D, texelCoord * 0.05) * Omega + t * Phase;
 
         // Developing heightmap for TES.
-        height.x = Q * Amp * D.x * cos(inp);
-        height.y = Amp * sin(inp);
+        height.x += Q * Amp * D.x * cos(inp);
+        height.y += Amp * sin(inp);
         height.z += Q * Amp * D.y * cos(inp);
 
         // Developing normal map for FS.
