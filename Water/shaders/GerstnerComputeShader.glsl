@@ -43,17 +43,20 @@ void main() {
         Qs[i]       = mix(0.0, 1.0, r4);
 
         float angle = r3 * 6.28318530718;
-        Dirs[i]     = vec2(abs(cos(angle)), abs(sin(angle))); // normalized
+        Dirs[i]     = vec2(cos(angle), sin(angle)); // normalized
     }
+
+    float Amp = 0.1;
+    float Omega = 1.0;
 
     for(uint i = 0; i<WAVE_COUNT; i++) {
 
         // Constants for this wave
-        float Amp = Amps[i];
+        //float Amp = Amps[i];
         float Speed = Speeds[i];
-        float Wavelen = Wavelens[i];
+        //float Wavelen = Wavelens[i];
         float Q = Qs[i];
-        float Omega = 2 / Wavelen;
+        //float Omega = 2 / Wavelen;
         float Phase = Speed * Omega;
         vec2  D = normalize(Dirs[i]);
 
@@ -68,6 +71,9 @@ void main() {
         normal.x += Amp * Omega * D.x * cos(inp);
         normal.y += Amp * Omega * Q   * sin(inp);
         normal.z += Amp * Omega * D.y * cos(inp);
+
+        Amp *= 0.82;
+        Omega *= 1.18;
     }
 
     // Negate normal coordinates from derivating wave equations.

@@ -11,49 +11,38 @@ float rand(float n){return fract(sin(n) * 43758.5453123);}
 float noise(float p){ float fl = floor(p); float fc = fract(p); return mix(rand(fl), rand(fl + 1.0), fc);}
 
 // Consts
-const int WAVE_COUNT = 32;
+const int WAVE_COUNT = 16;
 
 void main() {
 
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
-    vec2 normTexelCoord = vec2(1.0, 1.0);
-    normTexelCoord.x = float(texelCoord.x)/(gl_NumWorkGroups.x);
-    normTexelCoord.y = float(texelCoord.y)/(gl_NumWorkGroups.y);
 	
     vec4 height = vec4(0.0, 0.0, 0.0, 0.0);
     vec4 normal = vec4(0.0, 1.0, 0.0, 0.0);
 
-    float Amps[WAVE_COUNT];
+    float Amp = 0.7;
+    float Omega = 1.0;
     float Speeds[WAVE_COUNT];
-    float Wavelens[WAVE_COUNT];
     vec2  Dirs[WAVE_COUNT];
 
-    for (int i = 0; i < WAVE_COUNT; i++)
+    for (uint i = 0; i < WAVE_COUNT; i++)
     {
         float r0 = rand(float(i) * 12.9898);
         float r1 = rand(float(i) * 78.233);
-        float r2 = rand(float(i) * 39.425);
-        float r3 = rand(float(i) * 91.133);
 
-        Amps[i]     = mix(0.05, 0.3, r0);
-        Speeds[i]   = mix(0.05, 2.5, r1);
-        Wavelens[i] = mix(0.5, 2.0, r2);
+        Speeds[i]   = mix(0.05, 2.5, r0);
 
-        float angle = r3 * 6.28318530718;
+        float angle = r1 * 6.28318530718;
         Dirs[i]     = vec2(cos(angle), sin(angle)); // normalized
     }
 
-    for(uint i = 0; i<WAVE_COUNT; i++) {
-
-        // Constants for this wave
-        float Amp = Amps[i];
+    for(int i = 0; i<WAVE_COUNT; i++) {
+        
         float Speed = Speeds[i];
-        float Wavelen = Wavelens[i];
-        float Omega = 2 / Wavelen;
         float Phase = Speed * Omega;
         vec2  D = normalize(Dirs[i]);
 
-        float inp = dot(D, texelCoord * 0.008) * Omega + t * Phase;
+        float inp = dot(D, texelCoord * 0.01) * Omega + t * Phase;
 
         // Developing heightmap for TES.
         height.y += Amp * sin(inp);
@@ -61,6 +50,10 @@ void main() {
         // Developing normal map for FS.
         normal.x += Amp * Omega * D.x * cos(inp);
         normal.z += Amp * Omega * D.y * cos(inp);
+
+        // Fractional Brownian Noise
+        Amp *= 0.82;
+        Omega *= 1.18;
     }
 
     // Negate normal coordinates from derivating wave equations.
