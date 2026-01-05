@@ -20,7 +20,7 @@ void main() {
     vec4 height = vec4(0.0, 0.0, 0.0, 0.0);
     vec4 normal = vec4(0.0, 1.0, 0.0, 0.0);
 
-    float Amp = 0.7;
+    float Amp = 0.3;
     float Omega = 1.0;
     float Speeds[WAVE_COUNT];
     vec2  Dirs[WAVE_COUNT];
@@ -36,20 +36,25 @@ void main() {
         Dirs[i]     = vec2(cos(angle), sin(angle)); // normalized
     }
 
+    float dfdx = 0.0;
+    float dfdz = 0.0;
+
     for(int i = 0; i<WAVE_COUNT; i++) {
         
         float Speed = Speeds[i];
         float Phase = Speed * Omega;
         vec2  D = normalize(Dirs[i]);
 
-        float inp = dot(D, texelCoord * 0.01) * Omega + t * Phase;
+        float inp = dot(D, (texelCoord + vec2(dfdx, dfdz)) * 0.01) * Omega + t * Phase;
 
         // Developing heightmap for TES.
         height.y += Amp * sin(inp);
 
         // Developing normal map for FS.
-        normal.x += Amp * Omega * D.x * cos(inp);
-        normal.z += Amp * Omega * D.y * cos(inp);
+        dfdx = Amp * Omega * D.x * cos(inp);
+        dfdz = Amp * Omega * D.y * cos(inp);
+        normal.x += dfdx;
+        normal.z += dfdz;
 
         // Fractional Brownian Noise
         Amp *= 0.82;

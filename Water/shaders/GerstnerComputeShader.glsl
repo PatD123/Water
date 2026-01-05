@@ -48,6 +48,8 @@ void main() {
 
     float Amp = 0.1;
     float Omega = 1.0;
+    float dfdx = 0.0;
+    float dfdz = 0.0;
 
     for(uint i = 0; i<WAVE_COUNT; i++) {
 
@@ -60,7 +62,7 @@ void main() {
         float Phase = Speed * Omega;
         vec2  D = normalize(Dirs[i]);
 
-        float inp = dot(D, texelCoord * 0.05) * Omega + t * Phase;
+        float inp = dot(D, (texelCoord + vec2(dfdx, dfdz)) * 0.05) * Omega + t * Phase;
 
         // Developing heightmap for TES.
         height.x += Q * Amp * D.x * cos(inp);
@@ -68,9 +70,11 @@ void main() {
         height.z += Q * Amp * D.y * cos(inp);
 
         // Developing normal map for FS.
-        normal.x += Amp * Omega * D.x * cos(inp);
+        dfdx = Amp * Omega * D.x * cos(inp);
+        dfdz = Amp * Omega * D.y * cos(inp);
+        normal.x += dfdx;
         normal.y += Amp * Omega * Q   * sin(inp);
-        normal.z += Amp * Omega * D.y * cos(inp);
+        normal.z += dfdz;
 
         Amp *= 0.82;
         Omega *= 1.18;
