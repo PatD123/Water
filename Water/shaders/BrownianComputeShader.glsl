@@ -20,7 +20,7 @@ void main() {
     vec4 height = vec4(0.0, 0.0, 0.0, 0.0);
     vec4 normal = vec4(0.0, 1.0, 0.0, 0.0);
 
-    float Amp = 0.3;
+    float Amp = 0.6;
     float Omega = 1.0;
     float Speeds[WAVE_COUNT];
     vec2  Dirs[WAVE_COUNT];

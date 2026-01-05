@@ -11,7 +11,7 @@ float rand(float n){return fract(sin(n) * 43758.5453123);}
 float noise(float p){ float fl = floor(p); float fc = fract(p); return mix(rand(fl), rand(fl + 1.0), fc);}
 
 // Consts
-const int WAVE_COUNT = 16;
+const int WAVE_COUNT = 8;
 
 void main() {
 
@@ -37,32 +37,30 @@ void main() {
         float r3 = rand(float(i) * 91.133);
         float r4 = rand(float(i) * 7.63981);
 
-        Amps[i]     = mix(0.05, 0.1, r0);
+        Amps[i]     = mix(0.05, 1.0, r0);
         Speeds[i]   = mix(0.05, 2.5, r1);
         Wavelens[i] = mix(0.5, 2.0, r2);
         Qs[i]       = mix(0.0, 1.0, r4);
 
         float angle = r3 * 6.28318530718;
-        Dirs[i]     = vec2(cos(angle), sin(angle)); // normalized
+        Dirs[i]     = vec2(abs(cos(angle)), abs(sin(angle)));
     }
 
-    float Amp = 0.1;
-    float Omega = 1.0;
     float dfdx = 0.0;
     float dfdz = 0.0;
 
-    for(uint i = 0; i<WAVE_COUNT; i++) {
+    for(int i = 0; i<WAVE_COUNT; i++) {
 
         // Constants for this wave
-        //float Amp = Amps[i];
+        float Amp = Amps[i];
         float Speed = Speeds[i];
-        //float Wavelen = Wavelens[i];
+        float Wavelen = Wavelens[i];
         float Q = Qs[i];
-        //float Omega = 2 / Wavelen;
+        float Omega = 2 / Wavelen;
         float Phase = Speed * Omega;
         vec2  D = normalize(Dirs[i]);
 
-        float inp = dot(D, (texelCoord + vec2(dfdx, dfdz)) * 0.05) * Omega + t * Phase;
+        float inp = dot(D, texelCoord * 0.005) * Omega + t * Phase;
 
         // Developing heightmap for TES.
         height.x += Q * Amp * D.x * cos(inp);
@@ -76,13 +74,38 @@ void main() {
         normal.y += Amp * Omega * Q   * sin(inp);
         normal.z += dfdz;
 
+        // Amp *= 0.82;
+        // Omega *= 1.18;
+    }
+
+    float Amp = 0.3;
+    float Omega = 1.0;
+
+    for(int i = 0; i<WAVE_COUNT*4; i++) {
+        
+        float Speed = Speeds[i%WAVE_COUNT];
+        float Phase = Speed * Omega;
+        vec2  D = normalize(Dirs[i%WAVE_COUNT]);
+
+        float inp = dot(D, (texelCoord + vec2(dfdx, dfdz)) * 0.02) * Omega + t * Phase;
+
+        // Developing heightmap for TES.
+        height.y += Amp * sin(inp);
+
+        // Developing normal map for FS.
+        dfdx = Amp * Omega * D.x * cos(inp);
+        dfdz = Amp * Omega * D.y * cos(inp);
+        normal.x += dfdx;
+        normal.z += dfdz;
+
+        // Fractional Brownian Noise
         Amp *= 0.82;
         Omega *= 1.18;
     }
 
     // Negate normal coordinates from derivating wave equations.
     normal.x = -normal.x;
-    normal.y = 1 - normal.y;
+    normal.y = 5 - normal.y;
     normal.z = -normal.z;
     normal = normalize(normal);
 	
