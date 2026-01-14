@@ -113,7 +113,7 @@ int main() {
     std::cout << "Number of Channels: " << TEX_NCHANNELS << std::endl;
 
     // Consts
-    const float RES = 20.0f;                     // Number of patches per texture
+    const float RES = 50.0f;                     // Number of patches per texture
     const float HPP = TEX_HEIGHT / RES;     // Height per patch
     const float WPP = TEX_WIDTH / RES;      // Width per patch
     const float TEX_HPP = 1.0f / RES;
@@ -263,7 +263,7 @@ int main() {
         sh.setUniform1i(shaderProgram, "normalMap", 1);
 
         glUseProgram(computeShaderProgram);
-        glDispatchCompute(TEX_WIDTH, TEX_HEIGHT, 1);
+        glDispatchCompute(TEX_WIDTH/10, TEX_HEIGHT/10, 1);
 
         // make sure writing to image has finished before read
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);

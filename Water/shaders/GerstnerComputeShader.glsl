@@ -1,6 +1,6 @@
 #version 430 core
 
-layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout (local_size_x = 10, local_size_y = 10, local_size_z = 1) in;
 
 layout(rgba16f, binding = 0) uniform image2D heightOutput;
 layout(rgba16f, binding = 1) uniform image2D normOuput;
@@ -37,7 +37,7 @@ void main() {
         float r3 = rand(float(i) * 91.133);
         float r4 = rand(float(i) * 7.63981);
 
-        Amps[i]     = mix(0.05, 1.0, r0);
+        Amps[i]     = mix(0.05, 2.0, r0);
         Speeds[i]   = mix(0.05, 2.5, r1);
         Wavelens[i] = mix(0.5, 2.0, r2);
         Qs[i]       = mix(0.0, 1.0, r4);
@@ -78,7 +78,7 @@ void main() {
         // Omega *= 1.18;
     }
 
-    float Amp = 0.3;
+    float Amp = 0.6;
     float Omega = 1.0;
 
     for(int i = 0; i<WAVE_COUNT*4; i++) {
@@ -105,7 +105,7 @@ void main() {
 
     // Negate normal coordinates from derivating wave equations.
     normal.x = -normal.x;
-    normal.y = 5 - normal.y;
+    normal.y = 10 - normal.y;
     normal.z = -normal.z;
     normal = normalize(normal);
 	
