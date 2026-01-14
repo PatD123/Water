@@ -10,6 +10,8 @@ CPU creates the patches before tessellation process. The compute shader recomput
 per frame. This results in a new texture buffer per frame. When the Tessellation Evaluation Shader evaluates the texture at
 the new intermediate interpolated points, it samples the updated texture buffer.
 
+https://github.com/user-attachments/assets/72c1f6f0-8045-411f-96b8-5512668444bf
+
 https://github.com/user-attachments/assets/2f48a992-ce36-40d0-ad0f-5cec9d8f6052
 
 https://github.com/user-attachments/assets/84412d60-0aaa-4c90-b66f-fc1684995183
