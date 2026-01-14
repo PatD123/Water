@@ -2,8 +2,8 @@
 
 layout (local_size_x = 10, local_size_y = 10, local_size_z = 1) in;
 
-layout(rgba16f, binding = 0) uniform image2D heightOutput;
-layout(rgba16f, binding = 1) uniform image2D normOuput;
+layout(rgba32f, binding = 0) uniform image2D heightOutput;
+layout(rgba32f, binding = 1) uniform image2D normOuput;
 
 uniform float t;
 
@@ -43,7 +43,7 @@ void main() {
         Qs[i]       = mix(0.0, 1.0, r4);
 
         float angle = r3 * 6.28318530718;
-        Dirs[i]     = vec2(abs(cos(angle)), abs(sin(angle)));
+        Dirs[i]     = abs(vec2(cos(angle), sin(angle)));
     }
 
     float dfdx = 0.0;
@@ -79,15 +79,20 @@ void main() {
     }
 
     float Amp = 0.6;
-    float Omega = 1.0;
+    float Omega = 1.5;
+    dfdx = 0.0;
+    dfdz = 0.0;
 
-    for(int i = 0; i<WAVE_COUNT*4; i++) {
+    for(int i = 0; i<WAVE_COUNT*2; i++) {
+
+        float r0 = rand(float(i) * 12.9898);
+        float r1 = rand(float(i) * 78.233) * 6.28318530718;
         
-        float Speed = Speeds[i%WAVE_COUNT];
+        float Speed = mix(0.05, 2.5, r0);
         float Phase = Speed * Omega;
-        vec2  D = normalize(Dirs[i%WAVE_COUNT]);
+        vec2  D = vec2(cos(r1), sin(r1)); // normalized
 
-        float inp = dot(D, (texelCoord + vec2(dfdx, dfdz)) * 0.02) * Omega + t * Phase;
+        float inp = dot(D, (texelCoord + vec2(dfdx, dfdz)) * 0.01) * Omega + t * Phase;
 
         // Developing heightmap for TES.
         height.y += Amp * sin(inp);
@@ -105,7 +110,7 @@ void main() {
 
     // Negate normal coordinates from derivating wave equations.
     normal.x = -normal.x;
-    normal.y = 10 - normal.y;
+    normal.y = 1 - normal.y;
     normal.z = -normal.z;
     normal = normalize(normal);
 	

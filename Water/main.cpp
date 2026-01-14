@@ -93,8 +93,8 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glBindImageTexture(0, heightTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glBindImageTexture(0, heightTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
     // Creating r/w normal texture for Compute Shader.
     unsigned int normalTexture;
     glGenTextures(1, &normalTexture);
@@ -104,8 +104,8 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glBindImageTexture(1, normalTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glBindImageTexture(1, normalTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
     std::cout << "TEXTURE SPECS" << std::endl;
     std::cout << "Height: " << TEX_HEIGHT << std::endl;
@@ -266,7 +266,7 @@ int main() {
         glDispatchCompute(TEX_WIDTH/10, TEX_HEIGHT/10, 1);
 
         // make sure writing to image has finished before read
-        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
 
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
