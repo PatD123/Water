@@ -17,7 +17,7 @@ const char* VERTEX_SHADER_PATH = "shaders/VertexShader.glsl";
 const char* TESSELLATION_CONTROL_SHADER_PATH = "shaders/TessellationControlShader.glsl";
 const char* TESSELLATION_EVALUATION_SHADER_PATH = "shaders/TessellationEvaluationShader.glsl";
 const char* FRAGMENT_SHADER_PATH = "shaders/FragmentShader.glsl";
-const char* COMPUTE_SHADER_PATH = "shaders/ComputeShader.glsl";
+const char* COMPUTE_SHADER_PATH = "shaders/GerstnerComputeShader.glsl";
 const char* DEMO_HEIGHTMAP_PATH = "demo_heightmap.png";
 
 // Timing
@@ -43,7 +43,7 @@ float lastX = 800.0f / 2.0;
 float lastY = 600.0 / 2.0;
 
 // Consts
-const glm::vec3 LIGHT_POS = glm::vec3(20.0f, 100.0f, 20.0f);
+const glm::vec3 LIGHT_POS = glm::vec3(25.0f, 50.0f, 25.0f);
 const glm::vec3 LIGHT_COLOR = glm::vec3(1.0f, 1.0f, 1.0f);
 
 int main() {
@@ -93,8 +93,8 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glBindImageTexture(0, heightTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glBindImageTexture(0, heightTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
     // Creating r/w normal texture for Compute Shader.
     unsigned int normalTexture;
     glGenTextures(1, &normalTexture);
@@ -104,8 +104,8 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glBindImageTexture(1, normalTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, TEX_WIDTH, TEX_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glBindImageTexture(1, normalTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
     std::cout << "TEXTURE SPECS" << std::endl;
     std::cout << "Height: " << TEX_HEIGHT << std::endl;
@@ -113,7 +113,7 @@ int main() {
     std::cout << "Number of Channels: " << TEX_NCHANNELS << std::endl;
 
     // Consts
-    const float RES = 40.0f;                     // Number of patches per texture
+    const float RES = 50.0f;                     // Number of patches per texture
     const float HPP = TEX_HEIGHT / RES;     // Height per patch
     const float WPP = TEX_WIDTH / RES;      // Width per patch
     const float TEX_HPP = 1.0f / RES;
@@ -263,10 +263,10 @@ int main() {
         sh.setUniform1i(shaderProgram, "normalMap", 1);
 
         glUseProgram(computeShaderProgram);
-        glDispatchCompute(TEX_WIDTH, TEX_HEIGHT, 1);
+        glDispatchCompute(TEX_WIDTH/10, TEX_HEIGHT/10, 1);
 
         // make sure writing to image has finished before read
-        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
 
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);

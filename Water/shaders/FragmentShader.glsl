@@ -12,11 +12,12 @@ out vec4 FragColor;
 void main()
 {
     
-    vec3 color = vec3(0.0, 0.380392, 0.5529411);
+    vec3 color = vec3(6.0/255, 84.0/255, 176./255);
+    // vec3 color = vec3(0.0, 0.0, 1.0);
 
 	// Ambient
 
-    float ambientStrength = 0.4;
+    float ambientStrength = 0.2;
     vec3 ambient = ambientStrength * LightColor;
 
 	// Diffuse
@@ -28,7 +29,7 @@ void main()
 
     // Specular
 
-    float specularStrength = 0.05;
+    float specularStrength = 0.7;
     vec3 viewDir = normalize(CamPos - FragPos); // From frag to cam
     vec3 reflectDir = reflect(-lightDir, norm);  // Across norm, pointing away from frag.
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 16);
