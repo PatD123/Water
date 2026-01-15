@@ -43,7 +43,7 @@ float lastX = 800.0f / 2.0;
 float lastY = 600.0 / 2.0;
 
 // Consts
-const glm::vec3 LIGHT_POS = glm::vec3(20.0f, 100.0f, 20.0f);
+const glm::vec3 LIGHT_POS = glm::vec3(25.0f, 50.0f, 25.0f);
 const glm::vec3 LIGHT_COLOR = glm::vec3(1.0f, 1.0f, 1.0f);
 
 int main() {

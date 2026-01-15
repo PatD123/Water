@@ -21,7 +21,7 @@ void main() {
     normTexelCoord.y = float(texelCoord.y)/(gl_NumWorkGroups.y);
 	
     vec4 height = vec4(0.0, 0.0, 0.0, 0.0);
-    vec4 normal = vec4(0.0, 0.0, 1.0, 0.0);
+    vec4 normal = vec4(0.0, 0.0, 0.0, 0.0);
 
     float Amps[WAVE_COUNT];
     float Speeds[WAVE_COUNT];
