@@ -21,7 +21,7 @@ void main() {
     normTexelCoord.y = float(texelCoord.y)/(gl_NumWorkGroups.y);
 	
     vec4 height = vec4(0.0, 0.0, 0.0, 0.0);
-    vec4 normal = vec4(0.0, 0.0, 0.0, 0.0);
+    vec4 normal = vec4(0.0, 0.0, 1.0, 0.0);
 
     float Amps[WAVE_COUNT];
     float Speeds[WAVE_COUNT];
@@ -40,7 +40,7 @@ void main() {
         Amps[i]     = mix(0.05, 2.0, r0);
         Speeds[i]   = mix(0.05, 2.5, r1);
         Wavelens[i] = mix(0.5, 2.0, r2);
-        Qs[i]       = mix(0.0, 1.0, r4);
+        Qs[i]       = mix(0.0, 1.0/WAVE_COUNT, r4);
 
         float angle = r3 * 6.28318530718;
         Dirs[i]     = abs(vec2(cos(angle), sin(angle)));
@@ -79,7 +79,7 @@ void main() {
     }
 
     float Amp = 0.6;
-    float Omega = 1.5;
+    float Omega = 1.7;
     dfdx = 0.0;
     dfdz = 0.0;
 
